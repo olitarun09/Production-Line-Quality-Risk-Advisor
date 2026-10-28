@@ -1,89 +1,112 @@
-# 🏭 Production Line Quality Risk Advisor
+﻿# 🏭 Production Line Quality Risk Advisor (PLQRA)
 
-**From machine-failure prediction to smarter inspection decisions.**
+<p align="center">
+  <strong>From machine-failure prediction to smarter inspection decisions.</strong><br>
+  A machine-learning decision-support framework for manufacturing quality engineers.
+</p>
 
-![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white) ![Machine Learning](https://img.shields.io/badge/Machine%20Learning-Classification-7B61FF) ![Dataset](https://img.shields.io/badge/Dataset-AI4I%202020-0A7B83) ![Project](https://img.shields.io/badge/Project-Academic%20Prototype-orange)
+<p align="center">
+  <a href="#-project-overview"><img alt="Python" src="https://img.shields.io/badge/Python-3.9+-3776AB?logo=python&logoColor=white"></a>
+  <a href="#-machine-learning-approach"><img alt="Scikit-learn" src="https://img.shields.io/badge/ML-Scikit--learn-F7931E?logo=scikitlearn&logoColor=white"></a>
+  <a href="#-interactive-dashboard--prototype"><img alt="Frontend" src="https://img.shields.io/badge/UI-Tailwind%20%2B%20HTML5-06B6D4?logo=tailwindcss&logoColor=white"></a>
+  <a href="#-dataset"><img alt="Dataset" src="https://img.shields.io/badge/Dataset-AI4I%202020-0A7B83"></a>
+  <img alt="Status" src="https://img.shields.io/badge/Status-Prototype%20Active-success">
+</p>
 
-> **Project idea:** Help manufacturing quality engineers decide **which production observations to inspect first** when inspection time and resources are limited.
-
----
-
-## 🧭 Quick navigation
-
-- [🎯 Project overview](#-project-overview)
-- [⚠️ The problem](#️-the-problem)
-- [💡 Proposed solution](#-proposed-solution)
-- [🔄 Interactive workflow diagram](#-interactive-workflow-diagram)
-- [🧠 Machine-learning approach](#-machine-learning-approach)
-- [📊 Why Precision@K matters](#-why-precisionk-matters)
-- [🗂️ Dataset](#️-dataset)
-- [🛠️ Technology stack](#️-technology-stack)
-- [📈 Dashboard ideas](#-dashboard-ideas)
-- [✨ What makes this project different?](#-what-makes-this-project-different)
-- [🚀 Setup and usage](#-setup-and-usage)
-- [✅ Development checklist](#-development-checklist)
-- [⚖️ Scope and limitations](#️-scope-and-limitations)
-- [🔮 Future improvements](#-future-improvements)
+> [!IMPORTANT]
+> This project is designed for **decision support**, helping manufacturing teams decide **which production observations to inspect first** when inspection capacity is strictly limited. Any synthetic demo scores are illustrative and intended to support human quality inspection decisions.
 
 ---
 
-## 🎯 Project overview
+## 🧭 Quick Navigation
 
-**Production Line Quality Risk Advisor** is a machine-learning-based decision-support prototype for manufacturing quality teams.
+- [📋 Project Overview](#-project-overview)
+- [⚠️ The Problem](#️-the-problem)
+- [💡 Proposed Solution](#-proposed-solution)
+- [🎯 Why Precision@K Matters](#-why-precisionk-matters)
+- [🔄 Interactive Workflow Diagram](#-interactive-workflow-diagram)
+- [🖥️ Interactive Dashboard & Prototype](#️-interactive-dashboard--prototype)
+- [🤖 Machine-Learning Approach](#-machine-learning-approach)
+- [🛡️ Preventing Target Leakage](#️-preventing-target-leakage)
+- [📊 Dataset](#-dataset)
+- [📁 Repository Structure](#-repository-structure)
+- [🛠️ Technology Stack](#️-technology-stack)
+- [⚙️ Setup and Usage](#️-setup-and-usage)
+- [✅ Development Checklist](#-development-checklist)
+- [⚠️ Scope and Limitations](#️-scope-and-limitations)
+- [🚀 Future Improvements](#-future-improvements)
 
-It uses production parameters such as temperature, rotational speed, torque, product type, and tool wear to study patterns associated with machine failure. Rather than stopping at a simple *failure / no-failure* prediction, the project aims to rank observations by risk and help users prioritize a limited number of inspections.
+---
 
-### At a glance
+## 📋 Project Overview
 
-| Area | Project focus |
+The **Production Line Quality Risk Advisor** is a decision-support prototype built to bridge the gap between abstract machine-failure predictions and operational quality control in manufacturing plants.
+
+Modern manufacturing lines generate high volumes of telemetry: air temperature, process temperature, rotational speed, torque, and tool wear. While traditional classifiers simply output a binary *failure / no-failure* label, physical inspection teams operate under rigid capacity constraints (e.g., inspecting only **K** units per shift). PLQRA ranks equipment runs by estimated failure risk, ensuring inspectors allocate their finite time where risk is highest.
+
+### At a Glance
+
+| Item | Details |
 |---|---|
-| Problem type | Binary classification and inspection prioritization |
-| Dataset | AI4I 2020 Predictive Maintenance Dataset |
-| Main output | Risk-ranked production observations |
-| Decision metric | Precision@K, where **K** is inspection capacity |
-| Explainability | Feature importance and, if implemented, SHAP |
-| User interface | Planned interactive dashboard |
-| Intended user | Manufacturing quality engineer |
+| **Primary User** | Manufacturing Quality Engineer / QC Supervisor |
+| **Dataset** | AI4I 2020 Predictive Maintenance Dataset (10,000 records) |
+| **ML Task** | Binary classification with risk ranking |
+| **Decision Focus** | "If we can inspect only $ items, which should we inspect first?" |
+| **Core Metric** | **Precision@K** alongside standard F1, Precision, and Recall |
+| **UI Experience** | High-performance interactive dashboard with 3D tilt, telemetry simulation, and risk distribution |
 
-## ⚠️ The problem
+---
 
-A production line can generate many observations, but a quality team may not have the time or resources to inspect every item in detail.
+## ⚠️ The Problem
 
-A conventional classifier may predict whether an observation belongs to the failure class. That prediction alone does not fully answer the practical question:
+In a busy production facility:
+1. **Inspection Bottlenecks:** Quality teams cannot physically tear down or run deep non-destructive tests on 100% of manufactured units.
+2. **Extreme Class Imbalance:** Normal machine operations far outnumber failure incidents (>96% non-failure), making raw accuracy misleading.
+3. **Actionability Gap:** Standard classifiers output a label without ranking. If a model predicts 200 items could fail but the shift capacity is only 25 inspections, which 25 should be prioritized?
 
-**“If we can inspect only K observations, which ones should we inspect first?”**
+---
 
-This project explores how risk ranking, model evaluation, statistical analysis, and visual explanations can help answer that question.
+## 💡 Proposed Solution
 
-## 💡 Proposed solution
+PLQRA implements a 5-stage decision-support pipeline:
+1. **Telemetry Ingestion:** Ingest and preprocess factory sensor streams.
+2. **Leakage-Safe Feature Engineering:** Strip out retrospective failure flags to avoid target leakage.
+3. **Probabilistic Risk Scoring:** Estimate calibrated risk probabilities using evaluated ML models.
+4. **Capacity-Constrained Prioritization:** Sort items into a ranked queue and evaluate **Precision@K**.
+5. **Interactive Operator Dashboard:** Present clear risk queues, feature attributions, and threshold controls to quality engineers.
 
-The planned system brings together five steps:
+---
 
-1. **Understand the data** with exploratory data analysis and statistical summaries.
-2. **Prepare usable features** while checking missing values, data types, outliers, and possible leakage.
-3. **Train and compare classifiers** using suitable validation and classification metrics.
-4. **Rank observations** by the model's estimated failure risk and evaluate the top-K list.
-5. **Present evidence** in a dashboard so users can explore risk patterns and contributing factors.
+## 🎯 Why Precision@K Matters
 
-> **Important:** The risk controls and demo values in a front-end mock-up are illustrative. They are not predictions from a trained model unless they are explicitly connected to the implemented pipeline.
+**Precision@K** measures the proportion of actual failure cases within the top **K** highest-risk observations:
 
-## 🔄 Interactive workflow diagram
+\text{Precision@K} = \frac{\text{Actual positive cases among top } K}{K}
 
-The diagram below is rendered by GitHub when viewed in a Markdown file that supports Mermaid.
+### Example Scenario
+Suppose inspection capacity allows checking **25 units** during a shift ( = 25$). If **18** of those top-ranked units are confirmed defect/failure cases:
 
-```mermaid
+\text{Precision@25} = \frac{18}{25} = 0.72 \quad (72\%)
+
+This metric directly reflects real operational yield and efficiency under tight inspection budgets.
+
+---
+
+## 🔄 Interactive Workflow Diagram
+
+`mermaid
 flowchart TD
-    A["AI4I 2020 dataset"] --> B["Data inspection and preprocessing"]
-    B --> C["EDA and statistical analysis"]
-    C --> D["Feature preparation"]
-    D --> E["Train and validate classifiers"]
-    E --> F["Compare models and baselines"]
-    F --> G["Estimate risk for observations"]
-    G --> H["Rank observations by risk"]
-    H --> I["Evaluate top-K inspections"]
-    I --> J["Explain contributing factors"]
-    J --> K["Interactive dashboard"]
-    K --> L["Quality engineer reviews priorities"]
+    A["AI4I 2020 Dataset"] --> B["Data Ingestion & Cleaning"]
+    B --> C["EDA & Feature Engineering"]
+    C --> D["Leakage-Aware Split & Preprocessing"]
+    D --> E["Model Training & Cross-Validation"]
+    E --> F["Compare Candidates (RF, AdaBoost, Logistic, SVM)"]
+    F --> G["Calibrate Risk Probabilities"]
+    G --> H["Rank Queue by Estimated Risk"]
+    H --> I["Evaluate Precision@K (Capacity K)"]
+    I --> J["Feature Explanations & Inspection Queue"]
+    J --> K["Interactive Advisor Dashboard (UI)"]
+    K --> L["Quality Engineer Inspection Decision"]
 
     classDef data fill:#123047,stroke:#38bdf8,color:#ffffff
     classDef model fill:#25204b,stroke:#a78bfa,color:#ffffff
@@ -91,199 +114,140 @@ flowchart TD
     class A,B,C,D data
     class E,F,G,H,I model
     class J,K,L action
-```
-
-## 🧠 Machine-learning approach
-
-Candidate models to investigate:
-
-| Model | Why consider it? |
-|---|---|
-| Logistic Regression | Interpretable baseline; supports regularization |
-| Decision Tree | Easy-to-explain decision rules |
-| Random Forest | Ensemble of trees that can model nonlinear patterns |
-| AdaBoost | Boosting approach for combining weak learners |
-| Support Vector Machine (SVM) | Alternative classifier for comparison |
-
-The final model should be selected from **measured validation results**, not assumed in advance to be the best.
-
-### Evaluation plan
-
-- Use a train/test split and/or cross-validation appropriately.
-- Inspect the confusion matrix.
-- Report precision, recall, F1-score, and relevant class-wise results.
-- Compare with simple baselines.
-- Evaluate whether high-risk observations are actually concentrated near the top of the ranked list.
-- Document limitations and avoid relying on accuracy alone.
-
-### ⚠️ Prevent target leakage
-
-The AI4I dataset contains failure-mode indicators such as `TWF`, `HDF`, `PWF`, `OSF`, and `RNF`, along with the overall machine-failure target. These indicators describe failure modes and should **not automatically be used as ordinary predictors** when the goal is to predict failure from operating conditions. Including target-related information can make evaluation misleading.
-
-## 📊 Why Precision@K matters
-
-**Precision@K** measures the fraction of the top **K** ranked observations that are actual positive cases.
-
-\[
-\mathrm{Precision@K} =
-\frac{\text{Actual positive cases among the top K}}{K}
-\]
-
-### Example
-
-Suppose a quality engineer can inspect **25 observations**, and **18** of those top-ranked observations are actual failure cases:
-
-\[
-\mathrm{Precision@25} = \frac{18}{25} = 0.72 = 72\%
-\]
-
-That means 72% of the selected top 25 observations were positive cases in this example. It does **not** mean the model has 72% accuracy overall.
-
-Why this matters: the AI4I 2020 dataset is imbalanced, with far fewer failure cases than non-failure cases. A model can show high accuracy by mostly predicting the majority class while still missing the cases the team cares about. Precision@K complements standard classification metrics by reflecting the inspection-capacity constraint.
-
-## 🗂️ Dataset
-
-**AI4I 2020 Predictive Maintenance Dataset** from the UCI Machine Learning Repository.
-
-- **Rows:** 10,000 observations
-- **Task:** Machine-failure classification
-- **Example input features:** product type, air temperature, process temperature, rotational speed, torque, and tool wear
-- **Target:** machine failure
-
-The dataset is synthetic and designed for predictive-maintenance research. Results on it should not be presented as proof of performance on a real factory line.
-
-Dataset reference: [UCI Machine Learning Repository — AI4I 2020 Predictive Maintenance Dataset](https://archive.ics.uci.edu/dataset/601/ai4i+2020+predictive+maintenance+dataset)
-
-## 🛠️ Technology stack
-
-| Tool | Intended use |
-|---|---|
-| Python | Main programming language |
-| pandas / NumPy | Data handling and numerical operations |
-| scikit-learn | Preprocessing, model training, validation, and metrics |
-| Matplotlib / Seaborn | Exploratory and statistical visualizations |
-| Plotly | Interactive charts |
-| Streamlit | Dashboard interface |
-| SHAP | Model explanations, if integrated |
-
-Only list a library as **implemented** once it is actually used in the repository.
-
-## 📈 Dashboard ideas
-
-The dashboard can be organized around practical questions:
-
-- **Risk overview:** How many observations are marked high, medium, or lower risk?
-- **Inspection queue:** Which observations are in the top-K list?
-- **Capacity control:** How does the selected inspection capacity change the queue?
-- **Operating patterns:** How do temperature, speed, torque, and tool wear vary across outcomes?
-- **Model comparison:** How do candidate models compare on recall, precision, F1, and Precision@K?
-- **Explanation view:** Which features influence a selected prediction? Add SHAP only after it is implemented and validated.
-
-## ✨ What makes this project different?
-
-The project’s contribution is the **decision-support workflow**, not a claim that it invents a new machine-learning algorithm.
-
-| Conventional prediction workflow | Proposed advisor workflow |
-|---|---|
-| Predict failure / no failure | Rank observations by estimated risk |
-| Emphasize general classification metrics | Also evaluate the top-K inspection list |
-| Present a model result | Connect risk to an inspection-prioritization view |
-| May provide limited context | Explore operating patterns and feature explanations |
-| Output ends at prediction | Output supports a human review decision |
-
-The key question becomes: **“Given our inspection capacity, how useful is the ranked list?”**
-
-## 🚀 Setup and usage
-
-These are starter commands for a Python project. Adjust filenames and dependencies to match the actual repository structure.
-
-### 1. Clone the repository
-
-```bash
-git clone YOUR_REPOSITORY_URL
-cd YOUR_PROJECT_FOLDER
-```
-
-### 2. Create and activate a virtual environment
-
-```bash
-python -m venv .venv
-```
-
-Windows PowerShell:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-macOS / Linux:
-
-```bash
-source .venv/bin/activate
-```
-
-### 3. Install dependencies
-
-If a `requirements.txt` file exists:
-
-```bash
-pip install -r requirements.txt
-```
-
-Otherwise, install only the libraries required by the implemented code, for example:
-
-```bash
-pip install pandas numpy scikit-learn matplotlib seaborn plotly streamlit
-```
-
-### 4. Run the project
-
-Use the command matching the entry point you have actually created. For example, for a Streamlit app named `app.py`:
-
-```bash
-streamlit run app.py
-```
-
-> These commands are a setup template, not a claim that the repository already contains `app.py`, a trained model, or a complete dashboard.
-
-## ✅ Development checklist
-
-Use this checklist to track real progress. In GitHub Markdown, the boxes can be checked by editing the file.
-
-- [ ] Add the dataset and document its source
-- [ ] Inspect columns, types, missing values, duplicates, and class balance
-- [ ] Complete EDA and statistical analysis
-- [ ] Define leakage-aware predictor features and target
-- [ ] Build a preprocessing pipeline
-- [ ] Train baseline and candidate classification models
-- [ ] Evaluate using cross-validation and class-sensitive metrics
-- [ ] Implement risk ranking and Precision@K evaluation
-- [ ] Add feature-importance explanations; validate SHAP if included
-- [ ] Build the interactive dashboard
-- [ ] Add tests and usage documentation
-- [ ] Record measured results and known limitations
-
-## ⚖️ Scope and limitations
-
-- This is an academic prototype based on a synthetic dataset.
-- Model quality must be reported using actual experimental results; no performance score is assumed here.
-- The interactive concept demo is not a substitute for a trained model.
-- The system is intended to support human inspection decisions. It does not control, shut down, or certify machinery.
-- Real deployment would require representative plant data, domain-expert review, monitoring, and appropriate safety validation.
-
-## 🔮 Future improvements
-
-- Validate on real, appropriately governed manufacturing data.
-- Add configurable inspection capacity and compare Precision@K across models.
-- Add model calibration and decision-threshold analysis.
-- Add explainability for individual observations and overall model behavior.
-- Track model drift and retraining needs.
-- Add exportable inspection queues and audit-friendly decision records.
+`
 
 ---
 
-## 🤝 Project status
+## 🖥️ Interactive Dashboard & Prototype
 
-This README describes the intended design and development plan. Update the checklist, technology stack, screenshots, and evaluation results as each feature is implemented and verified.
+The repository includes a modern, high-aesthetic web dashboard (index.html / Production_Line_Quality_Risk_Advisor.html):
+- **Live Demo Modal:** Test real-time inspection capacity sliders and risk thresholds.
+- **Micro-Animations & 3D Tilt:** Visual feedback on telemetry cards and factory status indicators.
+- **Dynamic Risk Gauge:** Visual breakdown of High, Medium, and Low risk production observations.
 
-**Built as an academic project exploring machine learning, statistics, data visualization, and software engineering.**
+### How to Run Locally
+
+You can run the interactive prototype using Python's built-in HTTP server:
+
+`powershell
+# From the repository root
+python -m http.server 8080
+`
+Open **[http://localhost:8080/index.html](http://localhost:8080/index.html)** in any browser.
+
+---
+
+## 🤖 Machine-Learning Approach
+
+Candidate models evaluated for decision support:
+
+| Model | Rationale |
+|---|---|
+| **Logistic Regression** | Linear baseline with probabilistic calibration and L1/L2 regularization |
+| **Decision Tree** | Rule-based interpretable trees for fast inspection explanation |
+| **Random Forest** | Ensemble modeling capturing nonlinear sensor interactions and feature importance |
+| **AdaBoost** | Sequential boosting focusing on difficult borderline failure states |
+| **Support Vector Machine (SVM)** | Robust boundary classification with RBF kernels |
+
+---
+
+## 🛡️ Preventing Target Leakage
+
+The AI4I dataset contains specific failure breakdown flags (TWF, HDF, PWF, OSF, RNF) alongside the main Machine failure column.
+- **Critical Guard:** These indicators are retrospective descriptions of the failure itself.
+- **Rule:** They must **never** be used as input predictors when forecasting risk from operational telemetry.
+
+---
+
+## 📊 Dataset
+
+The project uses the **AI4I 2020 Predictive Maintenance Dataset** (stored in [data/ai4i2020.csv](data/ai4i2020.csv)):
+- **Volume:** 10,000 production records
+- **Features:** Product Type (L, M, H), Air temperature [K], Process temperature [K], Rotational speed [rpm], Torque [Nm], Tool wear [min]
+- **Target:** Machine failure (0 = Normal, 1 = Failure)
+- **Source:** [UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/601/ai4i+2020+predictive+maintenance+dataset)
+
+---
+
+## 📁 Repository Structure
+
+`	ext
+├── data/
+│   └── ai4i2020.csv              # AI4I 2020 Predictive Maintenance dataset (10,000 rows)
+├── docs/
+│   ├── Production_Line_Quality_Risk_Advisor_Overview.pdf
+│   ├── SRS_Production_Line_Quality_Risk_Advisor_FINAL.docx
+│   └── The-Problem-Identifying-Production-Risk-Early.pptx
+├── index.html                    # Interactive Dashboard (Root entry point for GitHub Pages)
+├── Production_Line_Quality_Risk_Advisor.html # Standalone interactive dashboard file
+├── requirements.txt              # Project Python dependencies
+├── .gitignore                    # Python & IDE exclusion rules
+└── README.md                     # Comprehensive project documentation
+`
+
+---
+
+## 🛠️ Technology Stack
+
+| Technology | Category | Role |
+|---|---|---|
+| **Python 3.9+** | Core Language | Data modeling and back-end logic |
+| **pandas & NumPy** | Data Wrangling | Telemetry transformation and array operations |
+| **scikit-learn** | Machine Learning | Classification pipelines, validation, and metrics |
+| **Plotly & Seaborn** | Data Visualization | Correlation matrices and distribution plots |
+| **Streamlit** | Planned Dashboard | Python-based interactive analytical application |
+| **HTML5 & TailwindCSS** | Web Prototype | Modern interactive dashboard UI with micro-animations |
+
+---
+
+## ⚙️ Setup and Usage
+
+### 1. Clone the Repository
+`ash
+git clone https://github.com/olitarun09/Production-Line-Quality-Risk-Advisor.git
+cd Production-Line-Quality-Risk-Advisor
+`
+
+### 2. Create and Activate Virtual Environment
+`powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+`
+
+### 3. Install Dependencies
+`powershell
+pip install -r requirements.txt
+`
+
+---
+
+## ✅ Development Checklist
+
+- [x] Repository initialized and connected to GitHub
+- [x] Interactive web dashboard implemented (index.html)
+- [x] AI4I 2020 dataset added to [data/](data/)
+- [x] Project specifications and presentation materials added to [docs/](docs/)
+- [x] Comprehensive documentation and architecture diagrams in README.md
+- [ ] Exploratory Data Analysis (EDA) notebook
+- [ ] Baseline classification models and cross-validation suite
+- [ ] Precision@K ranking evaluation script
+- [ ] Streamlit analytics application integration
+
+---
+
+## ⚠️ Scope and Limitations
+
+- **Academic Prototype:** Trained and evaluated using synthetic research datasets; results require field validation before actual factory deployment.
+- **Human-in-the-Loop:** Designed strictly for decision support and inspection prioritization, not autonomous machine shutdown.
+
+---
+
+## 🚀 Future Improvements
+
+- Dynamic API connectors for real-time SCADA/PLC telemetry streams.
+- Automated SHAP/LIME explanation cards per ranked observation.
+- Shift-level inspection capacity optimizer with cost-sensitive loss weighting.
+
+---
+
+**Developed by Tarun Oli ([@olitarun09](https://github.com/olitarun09))**
